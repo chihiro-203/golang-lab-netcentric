@@ -21,5 +21,5 @@ func main() {
 			dis++
 		}
 	}
-	fmt.Println("Hamming Distance: ", dis)
+	fmt.Println("Hamming Distance:", dis)
 }
