@@ -1,3 +1,5 @@
+### [Return to README.md](https://github.com/ume-meu/golang-lab-netcentric/blob/main/README.md)
+
 # Lab 1 - Introduction to Golang
 
 This repository contains the solutions to the lab exercises for Net-Centric Programming, focusing on an introduction to the Go programming language. Below are the objectives and exercises included in this lab.
@@ -9,7 +11,8 @@ This repository contains the solutions to the lab exercises for Net-Centric Prog
 
 ## Exercises
 
-### 1. Hamming Distance
+### 1. Hamming Distance ([Solution](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/Ex1/main.go))
+
 **Problem:**
 Calculate the Hamming Distance between two DNA strands.
 
@@ -29,7 +32,7 @@ DNA strands are represented using the letters C, A, G, and T. The Hamming Distan
 
 ---
 
-### 2. Scrabble Score
+### 2. Scrabble Score ([Solution](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/Ex2/main.go))
 **Problem:**
 Given a word, compute its Scrabble score based on the following letter values:
 
@@ -59,7 +62,7 @@ Given a word, compute its Scrabble score based on the following letter values:
 
 ---
 
-### 3. Luhn Algorithm
+### 3. Luhn Algorithm ([Solution](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/Ex3/main.go))
 **Problem:**
 Validate whether a given number satisfies the Luhn formula, commonly used for credit card validation.
 
@@ -89,7 +92,7 @@ Validate whether a given number satisfies the Luhn formula, commonly used for cr
 
 ---
 
-### 4. Minesweeper
+### 4. Minesweeper ([Solution](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/Ex4/main.go))
 **Problem:**  
 Add mine counts to a completed Minesweeper board.
 
@@ -115,7 +118,7 @@ Add mine counts to a completed Minesweeper board.
 
 ---
 
-### 5. Matching Brackets
+### 5. Matching Brackets ([Solution](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/Ex5/main.go))
 **Problem:**
 Given a string containing brackets `[ ]`, braces `{ }`, and parentheses `( )`, verify that all pairs are matched and nested correctly.
 
