@@ -8,4 +8,5 @@ This repository contains net-centric labs implemented in Go with assistance from
 - Exercise 4 - Minesweeper: [problem](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/readme.md#4-minesweeper)
 - Exercise 5 - Matching Brackets: [problem](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/readme.md#5-matching-brackets)
 
+## Lab 2 - Go Concurrency
 
