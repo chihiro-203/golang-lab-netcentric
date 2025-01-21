@@ -1,34 +1,46 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"sync"
 )
 
 func main() {
-	var intSlice = []int{42, 17, 89, 74, 5, 63, 38, 49, 92, 29}
-	chOdd := make(chan int)
-	chEven := make(chan int)
+	reader := bufio.NewReader(os.Stdin)
+	str, _ := reader.ReadString('\n')
+	var wg sync.WaitGroup
+	cal := make(chan map[rune]int)
 
-	go odd(chOdd)
-	go even(chEven)
-
-	for _, value := range intSlice {
-		if value%2 != 0 {
-			chOdd <- value
-		} else {
-			chEven <- value
+	wg.Add(1)
+	go func(s string) {
+		defer wg.Done()
+		freq := map[rune]int{}
+		for _, char := range str {
+			freq[char]++
 		}
-	}
-}
+		cal <- freq
+	}(str)
 
-func odd(ch <-chan int) {
-	for v := range ch {
-		fmt.Println("ODD :", v)
-	}
-}
+	go func() {
+		wg.Wait()
+		close(cal)
+	}()
 
-func even(ch <-chan int) {
-	for v := range ch {
-		fmt.Println("EVEN:", v)
+	frequency := <-cal
+	for char, count := range frequency {
+		switch char {
+		case ' ':
+			fmt.Printf("'space': %d\n", count)
+		case '\n':
+			fmt.Printf("'newline': %d\n", count)
+		case '\t':
+			fmt.Printf("'tab': %d\n", count)
+		case '\r':
+			fmt.Printf("'carriage return': %d\n", count)
+		default:
+			fmt.Printf("%c: %d\n", char, count)
+		}
 	}
 }
