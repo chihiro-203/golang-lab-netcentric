@@ -8,17 +8,16 @@ import (
 )
 
 var (
-	students    int = 100
-	maxStudents int = 30
-	// readingHour map[int]int
+	students int = 100
+	maxSeats int = 30
 )
 
 func main() {
-	startTime := time.Now().Second()
+	startTime := time.Now()
 	rand.Seed(time.Now().Unix())
+	librarySeats := make(chan int, maxSeats)
 
 	var wg sync.WaitGroup
-	librarySeats := make(chan int, maxStudents)
 
 	for i := 1; i <= students; i++ {
 		wg.Add(1)
@@ -26,19 +25,27 @@ func main() {
 			defer wg.Done()
 			readingHour := rand.Intn(4) + 1
 
-			select {
-			case librarySeats <- studentID:
-				fmt.Printf("Time %d: Student %d starts reading at the library.\n", time.Now().Second()-startTime, studentID)
-				time.Sleep(time.Duration(readingHour) * time.Second)
-				fmt.Printf("Time %d: Student %d is leaving. Spent %d hour(s) reading.\n", time.Now().Second()-startTime, studentID, readingHour)
-				<-librarySeats
-			default:
-				fmt.Printf("Time %d: Student %d is waiting.\n", time.Now().Second()-startTime, studentID)
+			for {
+				select {
+				case librarySeats <- studentID:
+					elapsedTime := int(time.Since(startTime).Seconds())
+					fmt.Printf("Time %d: Student %d starts reading at the library\n", elapsedTime, studentID)
+					time.Sleep(time.Duration(readingHour) * time.Second)
+					elapsedTime = int(time.Since(startTime).Seconds())
+					fmt.Printf("Time %d: Student %d is leaving. Spent %d hours reading\n", elapsedTime, studentID, readingHour)
+					<-librarySeats
+					return
+				default:
+					elapsedTime := int(time.Since(startTime).Seconds())
+					fmt.Printf("Time %d: Student %d is waiting\n", elapsedTime, studentID)
+					time.Sleep(1 * time.Second)
+				}
+
 			}
 		}(i)
 	}
 
 	wg.Wait()
-	fmt.Printf("Time %d: No more students. Let's call it a day.", time.Now().Second()-startTime)
-
+	elapsedTime := int(time.Since(startTime).Seconds())
+	fmt.Printf("Time %d: No more students. Let's call it a day.", elapsedTime)
 }
