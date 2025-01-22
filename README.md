@@ -9,4 +9,5 @@ This repository contains net-centric labs implemented in Go with assistance from
 - Exercise 5 - Matching Brackets: [problem](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab1/readme.md#5-matching-brackets)
 
 ## Lab 2 - Go Concurrency
-
+- Exercise 1 - Goroutines Writing to a Shared Channel: [problem]()
+- Exercise 2 - 
