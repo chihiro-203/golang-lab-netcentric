@@ -122,7 +122,7 @@ func performTask(taskName string, wg *sync.WaitGroup) {
 
 ## Exercises
 
-### 1. Character Frequency
+### 1. Character Frequency ([Solution](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab2/Ex1/main.go))
 **Problem:**  
 Find the frequency of each character in a string. Improve the code using concurrency.  
 **Optional Task:** Perform the task on a text file.
@@ -146,7 +146,7 @@ Find the frequency of each character in a string. Improve the code using concurr
 
 ---
 
-### 2. Library Simulation
+### 2. Library Simulation ([Solution](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab2/Ex2/main.go))
 **Problem:**  
 Simulate the operation of a library using Go concurrency.
 
