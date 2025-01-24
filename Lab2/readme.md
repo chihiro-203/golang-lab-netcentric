@@ -1,3 +1,5 @@
+### [Return to README.md](https://github.com/ume-meu/golang-lab-netcentric/blob/main/README.md)
+
 # Lab 2 - Go Concurrency
 
 This repository contains the lab exercises for Net-Centric Programming, focusing on concurrency in the Go programming language. Below are the objectives, sample code snippets, and exercises included in this lab.
@@ -179,4 +181,3 @@ Time 10: No more students. Let's call it a day.
 
 ## Notes
 These exercises are designed to deepen your understanding of Go concurrency and its applications. Feel free to contribute by submitting your solutions or enhancements!
-```
