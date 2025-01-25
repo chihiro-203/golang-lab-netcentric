@@ -10,7 +10,7 @@ import (
 func main() {
 	conn, err := net.Dial("tcp", "127.0.0.1:8080")
 	if err != nil {
-		fmt.Println("Error connecting to server:", err)
+		fmt.Println("Error connecting to server", err)
 		os.Exit(1)
 	}
 	defer conn.Close()
@@ -25,7 +25,7 @@ func main() {
 		_, err := conn.Write([]byte(message))
 		if err != nil {
 			fmt.Println("Error writing to server:", err)
-			return
+			os.Exit(1)
 		}
 
 		response, err := bufio.NewReader(conn).ReadString('\n')
@@ -34,6 +34,6 @@ func main() {
 			return
 		}
 
-		fmt.Printf("Server response: %s", response)
+		fmt.Printf("Server response %s", response)
 	}
 }

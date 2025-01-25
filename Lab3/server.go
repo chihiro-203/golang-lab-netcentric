@@ -18,19 +18,16 @@ type User struct {
 func main() {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		fmt.Println("Error staring server: ", err)
+		fmt.Println("Error listening to client:", err)
 		os.Exit(1)
 	}
-
 	defer listener.Close()
-
 	fmt.Println("Server is listening on port 8080...")
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println("Error accepting connection:", err)
-			continue
 		}
 		fmt.Println("Client connected!")
 
@@ -42,7 +39,6 @@ func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
-
 	for {
 		message, err := reader.ReadString('\n')
 		if err != nil {
@@ -50,13 +46,26 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
-		fmt.Printf("Message from client %s", message)
+		fmt.Printf("Client chose to %s", message)
 
-		response := "Server received: " + message
+		response := "Server: "
+
+		if message == "/login" {
+			response += "Please login."
+		} else if message == "/register" {
+			response += "Please register."
+		}
 		_, err = conn.Write([]byte(response))
 		if err != nil {
-			fmt.Println("Error writing tp client:", err)
+			fmt.Println("Error writing to client:", err)
 			return
 		}
+
+		// response := "Server received: " + message
+		// _, err = conn.Write([]byte(response))
+		// if err != nil {
+		// 	fmt.Println("Error writing to client:", err)
+		// 	return
+		// }
 	}
 }
