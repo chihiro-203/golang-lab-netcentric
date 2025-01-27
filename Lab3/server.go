@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 type User struct {
@@ -45,27 +46,21 @@ func handleConnection(conn net.Conn) {
 			fmt.Println("Client disconnected!")
 			return
 		}
-
-		fmt.Printf("Client chose to %s", message)
+		message = strings.TrimSpace(message)
 
 		response := "Server: "
 
 		if message == "/login" {
-			response += "Please login."
+			response += "Please log in.\n"
 		} else if message == "/register" {
-			response += "Please register."
+			response += "Please register.\n"
+		} else {
+			response += "Received message '" + message + "'\n"
 		}
 		_, err = conn.Write([]byte(response))
 		if err != nil {
 			fmt.Println("Error writing to client:", err)
 			return
 		}
-
-		// response := "Server received: " + message
-		// _, err = conn.Write([]byte(response))
-		// if err != nil {
-		// 	fmt.Println("Error writing to client:", err)
-		// 	return
-		// }
 	}
 }

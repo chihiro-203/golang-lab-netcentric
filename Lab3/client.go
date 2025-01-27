@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -15,25 +17,98 @@ func main() {
 	}
 	defer conn.Close()
 
-	fmt.Println("Connected to server. Enter message: ")
+	fmt.Println("Connected to server.")
+	fmt.Println("You need to login or sign up to send message.")
+	fmt.Println("- Enter '/login' to log in")
+	fmt.Println("- Enter '/register' to sign up")
 
 	for {
 		fmt.Print("> ")
 		reader := bufio.NewReader(os.Stdin)
 		message, _ := reader.ReadString('\n')
+		message = strings.TrimSpace(message)
 
-		_, err := conn.Write([]byte(message))
-		if err != nil {
-			fmt.Println("Error writing to server:", err)
-			os.Exit(1)
+		if message == "/login" {
+			login(conn)
+			break
+		} else if message == "/register" {
+			register(conn)
+			break
+		} else {
+			fmt.Println("You need to login or sign up to send a message.")
+			fmt.Println("- Enter '/login' to log in")
+			fmt.Println("- Enter '/register' to sign up")
 		}
 
-		response, err := bufio.NewReader(conn).ReadString('\n')
-		if err != nil {
-			fmt.Println("Error reading from server:", err)
-			return
-		}
+		// if message != "/login" && message != "/register" {
+		// 	fmt.Println("You need to login or sign up to send message.")
+		// 	fmt.Println("- Enter '/login' to log in")
+		// 	fmt.Println("- Enter '/register' to sign up")
+		// } else {
 
-		fmt.Printf("Server response %s", response)
+		// _, err := conn.Write([]byte(message))
+		// if err != nil {
+		// 	fmt.Println("Error writing to server:", err)
+		// 	os.Exit(1)
+		// }
+
+		// response, err := bufio.NewReader(conn).ReadString('\n')
+		// if err != nil {
+		// 	fmt.Println("Error reading from server:", err)
+		// 	return
+		// }
+
+		// fmt.Printf("Server response %s", response)
+		// }
 	}
 }
+
+func login(conn net.Conn) {
+	fmt.Println("Logging in...")
+
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Enter username: ")
+	username, _ := reader.ReadString('\n')
+	username = strings.TrimSpace(username)
+
+	fmt.Print("Enter password: ")
+	password, _ := reader.ReadString('\n')
+	password = strings.TrimSpace(password)
+
+	hash := sha256.New()
+	hash.Write([]byte(password))
+	hashed := hash.Sum(nil)
+	// hashed = strings.TrimSpace(hashed)
+}
+
+func register(conn net.Conn) {
+	fmt.Println("Registering a new account...")
+
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Enter username: ")
+	username, _ := reader.ReadString('\n')
+	username = strings.TrimSpace(username)
+
+	var password, cPassword string
+	for {
+		fmt.Print("Enter password: ")
+		password, _ = reader.ReadString('\n')
+		password = strings.TrimSpace(password)
+
+		fmt.Print("Confirm password: ")
+		cPassword, _ = reader.ReadString('\n')
+		cPassword = strings.TrimSpace(cPassword)
+
+		if password == cPassword {
+			break
+		} else {
+			fmt.Println("Passwords do not match. Please try again.")
+		}
+	}
+}
+
+func guessingGame(conn net.Conn) {}
+
+func downloadFile(conn net.Conn) {}
