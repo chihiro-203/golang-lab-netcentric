@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var hash = sha256.New()
+
 func main() {
 	conn, err := net.Dial("tcp", "127.0.0.1:8080")
 	if err != nil {
@@ -22,6 +24,8 @@ func main() {
 	fmt.Println("- Enter '/login' to log in")
 	fmt.Println("- Enter '/register' to sign up")
 
+	authenticated := false
+
 	for {
 		fmt.Print("> ")
 		reader := bufio.NewReader(os.Stdin)
@@ -29,10 +33,10 @@ func main() {
 		message = strings.TrimSpace(message)
 
 		if message == "/login" {
-			login(conn)
+			login(conn, authenticated)
 			break
 		} else if message == "/register" {
-			register(conn)
+			register(conn, authenticated)
 			break
 		} else {
 			fmt.Println("You need to login or sign up to send a message.")
@@ -63,7 +67,7 @@ func main() {
 	}
 }
 
-func login(conn net.Conn) {
+func login(conn net.Conn, authenticated bool) {
 	fmt.Println("Logging in...")
 
 	reader := bufio.NewReader(os.Stdin)
@@ -76,13 +80,17 @@ func login(conn net.Conn) {
 	password, _ := reader.ReadString('\n')
 	password = strings.TrimSpace(password)
 
-	hash := sha256.New()
 	hash.Write([]byte(password))
 	hashed := hash.Sum(nil)
-	// hashed = strings.TrimSpace(hashed)
+	message := "/login " + username + " " + string(hashed[:])
+	_, err := conn.Write([]byte(message + "\n"))
+	if err != nil {
+		fmt.Println("Error sending login data to server:", err)
+		return
+	}
 }
 
-func register(conn net.Conn) {
+func register(conn net.Conn, authenticated bool) {
 	fmt.Println("Registering a new account...")
 
 	reader := bufio.NewReader(os.Stdin)
@@ -106,6 +114,17 @@ func register(conn net.Conn) {
 		} else {
 			fmt.Println("Passwords do not match. Please try again.")
 		}
+	}
+
+	authenticated = true
+
+	hash.Write([]byte(password))
+	hashed := hash.Sum(nil)
+	message := "/register " + username + " " + string(hashed[:])
+	_, err := conn.Write([]byte(message + "\n"))
+	if err != nil {
+		fmt.Println("Error sending registration data to server:", err)
+		return
 	}
 }
 

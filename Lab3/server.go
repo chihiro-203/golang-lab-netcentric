@@ -50,17 +50,17 @@ func handleConnection(conn net.Conn) {
 
 		response := "Server: "
 
-		if message == "/login" {
-			response += "Please log in.\n"
-		} else if message == "/register" {
-			response += "Please register.\n"
-		} else {
-			response += "Received message '" + message + "'\n"
-		}
-		_, err = conn.Write([]byte(response))
-		if err != nil {
-			fmt.Println("Error writing to client:", err)
-			return
-		}
+		// if message == "/login" {
+		// 	response += "Please log in.\n"
+		// } else if message == "/register" {
+		// 	response += "Please register.\n"
+		// } else {
+		// 	response += "Received message '" + message + "'\n"
+		// }
+		// _, err = conn.Write([]byte(response))
+		// if err != nil {
+		// 	fmt.Println("Error writing to client:", err)
+		// 	return
+		// }
 	}
 }
