@@ -24,7 +24,7 @@ func main() {
 	fmt.Println("- Enter '/login' to log in")
 	fmt.Println("- Enter '/register' to sign up")
 
-	authenticated := false
+	// authenticated := false
 
 	for {
 		fmt.Print("> ")
@@ -33,10 +33,10 @@ func main() {
 		message = strings.TrimSpace(message)
 
 		if message == "/login" {
-			login(conn, authenticated)
+			login(conn)
 			break
 		} else if message == "/register" {
-			register(conn, authenticated)
+			register(conn)
 			break
 		} else {
 			fmt.Println("You need to login or sign up to send a message.")
@@ -67,7 +67,7 @@ func main() {
 	}
 }
 
-func login(conn net.Conn, authenticated bool) {
+func login(conn net.Conn) {
 	fmt.Println("Logging in...")
 
 	reader := bufio.NewReader(os.Stdin)
@@ -90,7 +90,7 @@ func login(conn net.Conn, authenticated bool) {
 	}
 }
 
-func register(conn net.Conn, authenticated bool) {
+func register(conn net.Conn) {
 	fmt.Println("Registering a new account...")
 
 	reader := bufio.NewReader(os.Stdin)
@@ -116,8 +116,6 @@ func register(conn net.Conn, authenticated bool) {
 		}
 	}
 
-	authenticated = true
-
 	hash.Write([]byte(password))
 	hashed := hash.Sum(nil)
 	message := "/register " + username + " " + string(hashed[:])
@@ -127,6 +125,8 @@ func register(conn net.Conn, authenticated bool) {
 		return
 	}
 }
+
+func modifyInfo(conn net.Conn) {}
 
 func guessingGame(conn net.Conn) {}
 
