@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	authenticated     = make(map[string]bool)
+	authenticated     = make(map[string]int)
 	isClientConnected bool
 	mu                sync.Mutex
 	userFile          = "users.json"
@@ -74,13 +74,22 @@ func handleConnection(conn net.Conn) {
 		parts := strings.Split(message, " ")
 		action, username, password := parts[0], parts[1], parts[2]
 
-		user := User{
-			Username: username,
-			Password: password,
-		}
-
-		if action == "/login" {
-		} else if action == "/register" {
+		if action == "/register" {
+			if userRegister(username, password) {
+				conn.Write([]byte("Registration successful. Please login.\n"))
+			} else {
+				conn.Write([]byte("Registration failed. Username may already exist.\n"))
+			}
+		} else if action == "/login" {
+			prefix := userLogin(username, password)
+			if prefix != 0 {
+				authenticated[username] = prefix
+				conn.Write([]byte(fmt.Sprintf("Login successful. Your session key is: %d\n", prefix)))
+			} else {
+				conn.Write([]byte("Login failed. Invalid username or password.\n"))
+			}
+		} else {
+			conn.Write([]byte("Unknown command.\n"))
 		}
 		fmt.Printf("Client joins: %s", username)
 	}
@@ -141,7 +150,22 @@ func userRegister(username, password string) bool {
 		Password: password,
 		Prefix:   prefix,
 	}
+
+	users = append(users, newUser)
+	saveUser(users)
+
 	return true
+}
+
+func userLogin(username, password string) int {
+	users := loadUsers()
+	for _, user := range users {
+		if user.Username == username && user.Password == password {
+			return user.Prefix
+		}
+	}
+
+	return 0
 }
 
 func genPrefix() int {
