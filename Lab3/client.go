@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"crypto/sha256"
 	"fmt"
 	"net"
 	"os"
@@ -18,8 +17,6 @@ func hashPassword(password string) (string, error) {
 	}
 	return string(hash), nil
 }
-
-var hash = sha256.New()
 
 func main() {
 	conn, err := net.Dial("tcp", "127.0.0.1:8080")
@@ -90,9 +87,7 @@ func login(conn net.Conn) {
 	password, _ := reader.ReadString('\n')
 	password = strings.TrimSpace(password)
 
-	hash.Write([]byte(password))
-	hashed := hash.Sum(nil)
-	message := "/login " + username + " " + string(hashed[:])
+	message := "/login " + username + " " + password
 	_, err := conn.Write([]byte(message + "\n"))
 	if err != nil {
 		fmt.Println("Error sending login data to server:", err)
@@ -127,42 +122,46 @@ func register(conn net.Conn) {
 		cPassword = strings.TrimSpace(cPassword)
 
 		if password == cPassword {
-			hash.Write([]byte(password))
-			hashed := hash.Sum(nil)
-			message := "/register " + username + " " + string(hashed[:])
-			_, err := conn.Write([]byte(message + "\n"))
-			if err != nil {
-				fmt.Println("Error sending registration data to server:", err)
-				return
-			}
+			// hashed, err := hashPassword(password)
+			// if err != nil {
+			// 	fmt.Println("Error hashing password:", err)
+			// }
+			// message := "/register " + username + " " + hashed
+			// _, err = conn.Write([]byte(message + "\n"))
+			// if err != nil {
+			// 	fmt.Println("Error sending registration data to server:", err)
+			// 	return
+			// }
 
-			response, err := bufio.NewReader(conn).ReadString('\n')
-			if err != nil {
-				fmt.Println("Error reading from server:", err)
-				return
-			}
-			fmt.Printf("Server:  %s", response)
+			// response, err := bufio.NewReader(conn).ReadString('\n')
+			// if err != nil {
+			// 	fmt.Println("Error reading from server:", err)
+			// 	return
+			// }
+			// fmt.Printf("Server:  %s", response)
 			break
 		} else {
 			fmt.Println("Passwords do not match. Please try again.")
 		}
 	}
 
-	// hash.Write([]byte(password))
-	// hashed := hash.Sum(nil)
-	// message := "/register " + username + " " + string(hashed[:])
-	// _, err := conn.Write([]byte(message + "\n"))
-	// if err != nil {
-	// 	fmt.Println("Error sending registration data to server:", err)
-	// 	return
-	// }
+	hashed, err := hashPassword(password)
+	if err != nil {
+		fmt.Println("Error hashing password:", err)
+	}
+	message := "/register " + username + " " + string(hashed[:])
+	_, err = conn.Write([]byte(message + "\n"))
+	if err != nil {
+		fmt.Println("Error sending registration data to server:", err)
+		return
+	}
 
-	// response, err := bufio.NewReader(conn).ReadString('\n')
-	// if err != nil {
-	// 	fmt.Println("Error reading from server:", err)
-	// 	return
-	// }
-	// fmt.Printf("Server:  %s", response)
+	response, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading from server:", err)
+		return
+	}
+	fmt.Printf("Server:  %s", response)
 }
 
 func modifyInfo(conn net.Conn) {}

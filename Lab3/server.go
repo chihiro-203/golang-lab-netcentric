@@ -11,6 +11,8 @@ import (
 	"os"
 	"strings"
 	"sync"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -174,7 +176,7 @@ func userLogin(username, password string) int {
 		fmt.Printf("Stored password:  [%s] | Hex: [%s]\n", user.Password, hex.EncodeToString([]byte(user.Password)))
 		// fmt.Println(user.Username, user.Prefix)
 		// fmt.Printf("password: (%s)\nPassword: (%s)\n", password, user.Password)
-		if user.Username == username && user.Password == password {
+		if user.Username == username && bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil {
 			return user.Prefix
 		}
 	}
