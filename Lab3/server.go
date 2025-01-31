@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -63,6 +64,13 @@ func main() {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
+	mu.Lock()
+	isClientConnected = true
+	defer func() {
+		isClientConnected = false
+		mu.Unlock()
+	}()
+
 	reader := bufio.NewReader(conn)
 
 	for {
@@ -71,6 +79,7 @@ func handleConnection(conn net.Conn) {
 			fmt.Println("Client disconnected!")
 			return
 		}
+		message = strings.TrimSpace(message)
 		parts := strings.Split(message, " ")
 		action, username, password := parts[0], parts[1], parts[2]
 
@@ -91,12 +100,8 @@ func handleConnection(conn net.Conn) {
 		} else {
 			conn.Write([]byte("Unknown command.\n"))
 		}
-		fmt.Printf("Client joins: %s", username)
+		fmt.Printf("Client's username: %s\n", username)
 	}
-
-	mu.Lock()
-	isClientConnected = false
-	mu.Unlock()
 }
 
 func loadUsers() []User {
@@ -159,7 +164,16 @@ func userRegister(username, password string) bool {
 
 func userLogin(username, password string) int {
 	users := loadUsers()
+
+	username = strings.TrimSpace(username)
+	password = strings.TrimSpace(password)
+
 	for _, user := range users {
+		fmt.Println(user.Username, user.Prefix)
+		fmt.Printf("Entered password: [%s] | Hex: [%s]\n", password, hex.EncodeToString([]byte(password)))
+		fmt.Printf("Stored password:  [%s] | Hex: [%s]\n", user.Password, hex.EncodeToString([]byte(user.Password)))
+		// fmt.Println(user.Username, user.Prefix)
+		// fmt.Printf("password: (%s)\nPassword: (%s)\n", password, user.Password)
 		if user.Username == username && user.Password == password {
 			return user.Prefix
 		}

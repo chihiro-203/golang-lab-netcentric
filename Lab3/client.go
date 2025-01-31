@@ -7,7 +7,17 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
+
+func hashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
 
 var hash = sha256.New()
 
@@ -88,6 +98,13 @@ func login(conn net.Conn) {
 		fmt.Println("Error sending login data to server:", err)
 		return
 	}
+
+	response, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading from server:", err)
+		return
+	}
+	fmt.Printf("Server: %s", response)
 }
 
 func register(conn net.Conn) {
@@ -110,20 +127,42 @@ func register(conn net.Conn) {
 		cPassword = strings.TrimSpace(cPassword)
 
 		if password == cPassword {
+			hash.Write([]byte(password))
+			hashed := hash.Sum(nil)
+			message := "/register " + username + " " + string(hashed[:])
+			_, err := conn.Write([]byte(message + "\n"))
+			if err != nil {
+				fmt.Println("Error sending registration data to server:", err)
+				return
+			}
+
+			response, err := bufio.NewReader(conn).ReadString('\n')
+			if err != nil {
+				fmt.Println("Error reading from server:", err)
+				return
+			}
+			fmt.Printf("Server:  %s", response)
 			break
 		} else {
 			fmt.Println("Passwords do not match. Please try again.")
 		}
 	}
 
-	hash.Write([]byte(password))
-	hashed := hash.Sum(nil)
-	message := "/register " + username + " " + string(hashed[:])
-	_, err := conn.Write([]byte(message + "\n"))
-	if err != nil {
-		fmt.Println("Error sending registration data to server:", err)
-		return
-	}
+	// hash.Write([]byte(password))
+	// hashed := hash.Sum(nil)
+	// message := "/register " + username + " " + string(hashed[:])
+	// _, err := conn.Write([]byte(message + "\n"))
+	// if err != nil {
+	// 	fmt.Println("Error sending registration data to server:", err)
+	// 	return
+	// }
+
+	// response, err := bufio.NewReader(conn).ReadString('\n')
+	// if err != nil {
+	// 	fmt.Println("Error reading from server:", err)
+	// 	return
+	// }
+	// fmt.Printf("Server:  %s", response)
 }
 
 func modifyInfo(conn net.Conn) {}
