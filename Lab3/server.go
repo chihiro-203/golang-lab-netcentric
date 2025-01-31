@@ -2,13 +2,13 @@ package main
 
 import (
 	"bufio"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -20,6 +20,7 @@ var (
 	isClientConnected bool
 	mu                sync.Mutex
 	userFile          = "users.json"
+	// name              string
 )
 
 type User struct {
@@ -95,7 +96,8 @@ func handleConnection(conn net.Conn) {
 			prefix := userLogin(username, password)
 			if prefix != 0 {
 				authenticated[username] = prefix
-				conn.Write([]byte(fmt.Sprintf("Login successful. Your session key is: %d\n", prefix)))
+				conn.Write([]byte(fmt.Sprintf("%d\n", prefix)))
+				modifyInfo()
 			} else {
 				conn.Write([]byte("Login failed. Invalid username or password.\n"))
 			}
@@ -150,7 +152,7 @@ func userRegister(username, password string) bool {
 		}
 	}
 
-	prefix := genPrefix()
+	prefix := genNum()
 
 	newUser := User{
 		Username: username,
@@ -171,11 +173,6 @@ func userLogin(username, password string) int {
 	password = strings.TrimSpace(password)
 
 	for _, user := range users {
-		fmt.Println(user.Username, user.Prefix)
-		fmt.Printf("Entered password: [%s] | Hex: [%s]\n", password, hex.EncodeToString([]byte(password)))
-		fmt.Printf("Stored password:  [%s] | Hex: [%s]\n", user.Password, hex.EncodeToString([]byte(user.Password)))
-		// fmt.Println(user.Username, user.Prefix)
-		// fmt.Printf("password: (%s)\nPassword: (%s)\n", password, user.Password)
 		if user.Username == username && bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil {
 			return user.Prefix
 		}
@@ -184,7 +181,32 @@ func userLogin(username, password string) int {
 	return 0
 }
 
-func genPrefix() int {
+func modifyInfo() {}
+
+func playGame(conn net.Conn) {
+	randNum := genNum()
+
+	reader := bufio.NewReader(conn)
+	message, _ := reader.ReadString('\n')
+	message = strings.TrimSpace(message)
+
+	answer, _ := strconv.Atoi(message)
+
+	if answer > randNum {
+		conn.Write([]byte("Your guessed number is larger than the result. Please try again.\n"))
+	} else if answer < randNum {
+		conn.Write([]byte("Your guessed number is smaller than the result. Please try again.\n"))
+	} else {
+		conn.Write([]byte(fmt.Sprintf("Correct answer. The random number is %d.\n", randNum)))
+	}
+}
+
+func genNum() int {
 	// rand.Seed(time.Now().UnixNano())
 	return rand.Intn(100) + 1
 }
+
+// func receiveMsg(conn net.Conn) {
+
+// 	reader := bufio.NewReader(conn)
+// }

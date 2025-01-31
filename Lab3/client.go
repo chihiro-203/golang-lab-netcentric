@@ -50,56 +50,66 @@ func main() {
 			fmt.Println("- Enter '/login' to log in")
 			fmt.Println("- Enter '/register' to sign up")
 		}
-
-		// if message != "/login" && message != "/register" {
-		// 	fmt.Println("You need to login or sign up to send message.")
-		// 	fmt.Println("- Enter '/login' to log in")
-		// 	fmt.Println("- Enter '/register' to sign up")
-		// } else {
-
-		// _, err := conn.Write([]byte(message))
-		// if err != nil {
-		// 	fmt.Println("Error writing to server:", err)
-		// 	os.Exit(1)
-		// }
-
-		// response, err := bufio.NewReader(conn).ReadString('\n')
-		// if err != nil {
-		// 	fmt.Println("Error reading from server:", err)
-		// 	return
-		// }
-
-		// fmt.Printf("Server response %s", response)
-		// }
 	}
 }
 
 func login(conn net.Conn) {
-	fmt.Println("Logging in...")
 
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Print("Enter username: ")
-	username, _ := reader.ReadString('\n')
-	username = strings.TrimSpace(username)
+	for {
+		fmt.Println("Logging in...")
+		fmt.Print("Enter username: ")
+		username, _ := reader.ReadString('\n')
+		username = strings.TrimSpace(username)
 
-	fmt.Print("Enter password: ")
-	password, _ := reader.ReadString('\n')
-	password = strings.TrimSpace(password)
+		fmt.Print("Enter password: ")
+		password, _ := reader.ReadString('\n')
+		password = strings.TrimSpace(password)
 
-	message := "/login " + username + " " + password
-	_, err := conn.Write([]byte(message + "\n"))
-	if err != nil {
-		fmt.Println("Error sending login data to server:", err)
-		return
+		message := "/login " + username + " " + password
+		_, err := conn.Write([]byte(message + "\n"))
+		if err != nil {
+			fmt.Println("Error sending login data to server:", err)
+			return
+		}
+
+		response, err := bufio.NewReader(conn).ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading from server:", err)
+			return
+		}
+
+		if strings.Contains(strings.TrimSpace(response), "failed") {
+			fmt.Printf("Server: %s", response)
+			continue
+		}
+
+		response = strings.TrimSpace(response)
+
+		key := strings.TrimSpace(response)
+
+		fmt.Printf("%s_Login successfully. Your key: %s\n", key, response)
+		fmt.Println("To continue, please follow instructions below:")
+		fmt.Println("- Enter '/profile' to modify your profile")
+		fmt.Println("- Enter '/game' to play Guessing Game")
+		fmt.Println("- Enter '/file' to play download our file")
+
+		fmt.Print("> ")
+		reader := bufio.NewReader(os.Stdin)
+		message, _ = reader.ReadString('\n')
+		message = strings.TrimSpace(message)
+
+		if message == "/profile" {
+			modifyProfile(conn)
+		} else if message == "/game" {
+			guessingGame(conn)
+		} else if message == "/file" {
+			downloadFile(conn)
+		}
+
+		break
 	}
-
-	response, err := bufio.NewReader(conn).ReadString('\n')
-	if err != nil {
-		fmt.Println("Error reading from server:", err)
-		return
-	}
-	fmt.Printf("Server: %s", response)
 }
 
 func register(conn net.Conn) {
@@ -164,8 +174,97 @@ func register(conn net.Conn) {
 	fmt.Printf("Server:  %s", response)
 }
 
-func modifyInfo(conn net.Conn) {}
+func writeMsg(conn net.Conn, message string) {
+	_, err := conn.Write([]byte(message + "\n"))
+	if err != nil {
+		fmt.Println("Error sending login data to server:", err)
+		return
+	}
+}
 
-func guessingGame(conn net.Conn) {}
+func readMsg(conn net.Conn) string {
+	response, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading from server:", err)
+		return ""
+	}
+	return response
+}
 
-func downloadFile(conn net.Conn) {}
+func modifyProfile(conn net.Conn) {
+	fmt.Println("Modifying your profile...")
+
+	fmt.Print("> ")
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Username ('no' if not change): ")
+	message, _ := reader.ReadString('\n')
+	message = strings.TrimSpace(message)
+	writeMsg(conn, message)
+
+	fmt.Println("Fullname ('no' if not change): ")
+	message, _ = reader.ReadString('\n')
+	message = strings.TrimSpace(message)
+	writeMsg(conn, message)
+
+	fmt.Println("Email ('no' if not change): ")
+	message, _ = reader.ReadString('\n')
+	message = strings.TrimSpace(message)
+	writeMsg(conn, message)
+
+	fmt.Println("Address ('no' if not change): ")
+	message, _ = reader.ReadString('\n')
+	message = strings.TrimSpace(message)
+	writeMsg(conn, message)
+
+	fmt.Println("Do you want to change password? \n'yes' if change\n'no' if not change")
+	message, _ = reader.ReadString('\n')
+	message = strings.TrimSpace(message)
+	writeMsg(conn, message)
+	if message == "yes" {
+		fmt.Println("Old password: ")
+		message, _ = reader.ReadString('\n')
+		message = strings.TrimSpace(message)
+		writeMsg(conn, message)
+
+		fmt.Println("New password: ")
+		message, _ = reader.ReadString('\n')
+		message = strings.TrimSpace(message)
+		writeMsg(conn, message)
+	}
+}
+
+func guessingGame(conn net.Conn) {
+	fmt.Println("Starting game...")
+
+	var num string
+
+	for {
+		fmt.Println("Input your guessed number: ")
+		fmt.Scan(&num)
+
+		writeMsg(conn, num+"\n")
+		response := readMsg(conn)
+
+		if strings.Contains(strings.ToLower(response), "correct") {
+			answer := ""
+			for answer != "yes" || answer != "no" {
+				fmt.Println("Do you want to play again? (yes/no)")
+				fmt.Scan(&answer)
+				if answer == "yes" {
+					continue
+				} else if answer == "no" {
+					break
+				} else {
+					fmt.Println("Please type the correct syntax.")
+				}
+			}
+		} else {
+			continue
+		}
+	}
+
+}
+
+func downloadFile(conn net.Conn) {
+	fmt.Println("Looking for available files...")
+}
