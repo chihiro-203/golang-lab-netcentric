@@ -207,18 +207,16 @@ func playGame(conn net.Conn) {
 			conn.Write([]byte("Your guessed number is smaller than the result. Please try again.\n"))
 		} else {
 			conn.Write([]byte(fmt.Sprintf("Correct answer. The random number is %d.\n", randNum)))
-			os.Stdout.Sync()
+
 			response, _ := reader.ReadString('\n')
 			response = strings.TrimSpace(response)
+			os.Stdout.Sync()
 			if response == "yes" {
 				randNum = genNum()
 				fmt.Printf("The random number is: %d\n", randNum)
 				continue
 			} else if response == "no" {
 				fmt.Println(name, "finishes playing game.")
-				break
-			} else {
-				fmt.Println("Invalid response. Exiting game.")
 				break
 			}
 		}

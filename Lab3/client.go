@@ -256,6 +256,7 @@ gameLoop:
 				fmt.Println("Do you want to play again? (yes/no)")
 				fmt.Scan(&answer)
 				answer = strings.ToLower(answer)
+				writeMsg(conn, answer)
 				if answer == "yes" {
 					continue
 				} else if answer == "no" {
@@ -265,7 +266,6 @@ gameLoop:
 					fmt.Println("Please type the correct syntax.")
 				}
 			}
-			writeMsg(conn, answer)
 		} else {
 			continue
 		}
