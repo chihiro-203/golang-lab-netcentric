@@ -100,6 +100,8 @@ func login(conn net.Conn) {
 		message, _ = reader.ReadString('\n')
 		message = strings.TrimSpace(message)
 
+		writeMsg(conn, message)
+
 		if message == "/profile" {
 			modifyProfile(conn)
 		} else if message == "/game" {
@@ -238,26 +240,32 @@ func guessingGame(conn net.Conn) {
 
 	var num string
 
+gameLoop:
 	for {
-		fmt.Println("Input your guessed number: ")
+		fmt.Print("Input your guessed number: ")
 		fmt.Scan(&num)
 
-		writeMsg(conn, num+"\n")
+		writeMsg(conn, num)
 		response := readMsg(conn)
+		fmt.Print(response)
+		os.Stdout.Sync()
 
 		if strings.Contains(strings.ToLower(response), "correct") {
 			answer := ""
-			for answer != "yes" || answer != "no" {
+			for answer != "yes" && answer != "no" {
 				fmt.Println("Do you want to play again? (yes/no)")
 				fmt.Scan(&answer)
+				answer = strings.ToLower(answer)
 				if answer == "yes" {
 					continue
 				} else if answer == "no" {
-					break
+					fmt.Println("Thanks for playing the Guessing game.")
+					break gameLoop
 				} else {
 					fmt.Println("Please type the correct syntax.")
 				}
 			}
+			writeMsg(conn, answer)
 		} else {
 			continue
 		}

@@ -20,7 +20,7 @@ var (
 	isClientConnected bool
 	mu                sync.Mutex
 	userFile          = "users.json"
-	// name              string
+	name              string
 )
 
 type User struct {
@@ -95,16 +95,23 @@ func handleConnection(conn net.Conn) {
 		} else if action == "/login" {
 			prefix := userLogin(username, password)
 			if prefix != 0 {
+				fmt.Printf("Client's username: %s\n", username)
+				name = username
 				authenticated[username] = prefix
 				conn.Write([]byte(fmt.Sprintf("%d\n", prefix)))
-				modifyInfo()
+				message = receiveMsg(conn)
+				if message == "/profile" {
+					modifyInfo()
+				} else if message == "/game" {
+					playGame(conn)
+				} else if message == "/file" {
+				}
 			} else {
 				conn.Write([]byte("Login failed. Invalid username or password.\n"))
 			}
 		} else {
 			conn.Write([]byte("Unknown command.\n"))
 		}
-		fmt.Printf("Client's username: %s\n", username)
 	}
 }
 
@@ -185,19 +192,36 @@ func modifyInfo() {}
 
 func playGame(conn net.Conn) {
 	randNum := genNum()
+	fmt.Printf("The random number is: %d\n", randNum)
 
-	reader := bufio.NewReader(conn)
-	message, _ := reader.ReadString('\n')
-	message = strings.TrimSpace(message)
+	for {
+		reader := bufio.NewReader(conn)
+		message, _ := reader.ReadString('\n')
+		message = strings.TrimSpace(message)
 
-	answer, _ := strconv.Atoi(message)
+		answer, _ := strconv.Atoi(message)
 
-	if answer > randNum {
-		conn.Write([]byte("Your guessed number is larger than the result. Please try again.\n"))
-	} else if answer < randNum {
-		conn.Write([]byte("Your guessed number is smaller than the result. Please try again.\n"))
-	} else {
-		conn.Write([]byte(fmt.Sprintf("Correct answer. The random number is %d.\n", randNum)))
+		if answer > randNum {
+			conn.Write([]byte("Your guessed number is larger than the result. Please try again.\n"))
+		} else if answer < randNum {
+			conn.Write([]byte("Your guessed number is smaller than the result. Please try again.\n"))
+		} else {
+			conn.Write([]byte(fmt.Sprintf("Correct answer. The random number is %d.\n", randNum)))
+			os.Stdout.Sync()
+			response, _ := reader.ReadString('\n')
+			response = strings.TrimSpace(response)
+			if response == "yes" {
+				randNum = genNum()
+				fmt.Printf("The random number is: %d\n", randNum)
+				continue
+			} else if response == "no" {
+				fmt.Println(name, "finishes playing game.")
+				break
+			} else {
+				fmt.Println("Invalid response. Exiting game.")
+				break
+			}
+		}
 	}
 }
 
@@ -206,7 +230,12 @@ func genNum() int {
 	return rand.Intn(100) + 1
 }
 
-// func receiveMsg(conn net.Conn) {
-
-// 	reader := bufio.NewReader(conn)
-// }
+func receiveMsg(conn net.Conn) string {
+	response, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		fmt.Println("Error reading from server:", err)
+		return ""
+	}
+	response = strings.TrimSpace(response)
+	return response
+}
