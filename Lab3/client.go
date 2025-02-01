@@ -3,12 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+var key string
 
 func hashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -87,10 +90,10 @@ func login(conn net.Conn) {
 
 		response = strings.TrimSpace(response)
 
-		key := strings.TrimSpace(response)
+		key = strings.TrimSpace(response)
 
 		fmt.Printf("%s_Login successfully. Your key: %s\n", key, response)
-		fmt.Println("To continue, please follow instructions below:")
+		fmt.Println(key, "_To continue, please follow instructions below:")
 		fmt.Println("- Enter '/profile' to modify your profile")
 		fmt.Println("- Enter '/game' to play Guessing Game")
 		fmt.Println("- Enter '/file' to play download our file")
@@ -242,7 +245,7 @@ func guessingGame(conn net.Conn) {
 
 gameLoop:
 	for {
-		fmt.Print("Input your guessed number: ")
+		fmt.Print(key, "_Input your guessed number: ")
 		fmt.Scan(&num)
 
 		writeMsg(conn, num)
@@ -253,17 +256,17 @@ gameLoop:
 		if strings.Contains(strings.ToLower(response), "correct") {
 			answer := ""
 			for answer != "yes" && answer != "no" {
-				fmt.Println("Do you want to play again? (yes/no)")
+				fmt.Println(key, "_Do you want to play again? (yes/no)")
 				fmt.Scan(&answer)
 				answer = strings.ToLower(answer)
 				writeMsg(conn, answer)
 				if answer == "yes" {
 					continue
 				} else if answer == "no" {
-					fmt.Println("Thanks for playing the Guessing game.")
+					fmt.Println(key, "_Thanks for playing the Guessing game.")
 					break gameLoop
 				} else {
-					fmt.Println("Please type the correct syntax.")
+					fmt.Println(key, "_Please type the correct syntax.")
 				}
 			}
 		} else {
@@ -275,4 +278,30 @@ gameLoop:
 
 func downloadFile(conn net.Conn) {
 	fmt.Println("Looking for available files...")
+
+	fmt.Print("Our available files: ")
+	response := readMsg(conn)
+	fmt.Print(response)
+
+	var filename string
+	fmt.Print(key, "_Which file you want to download? ")
+	fmt.Scan(&filename)
+
+	writeMsg(conn, filename)
+	localFile, err := os.Create("downloaded_" + filename)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer localFile.Close()
+
+	_, err = io.Copy(localFile, conn)
+	if err != nil {
+		fmt.Println("Error downloading file:", err)
+		return
+	}
+	fmt.Println("File downloaded successfully as:", "downloaded_"+fileName)
+
+	response = readMsg(conn)
+	fmt.Print(response)
 }

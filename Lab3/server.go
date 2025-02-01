@@ -4,10 +4,12 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -105,6 +107,7 @@ func handleConnection(conn net.Conn) {
 				} else if message == "/game" {
 					playGame(conn)
 				} else if message == "/file" {
+					getFiles(conn)
 				}
 			} else {
 				conn.Write([]byte("Login failed. Invalid username or password.\n"))
@@ -221,6 +224,46 @@ func playGame(conn net.Conn) {
 			}
 		}
 	}
+}
+
+func getFiles(conn net.Conn) {
+	folderPath := "./files"
+	files, err := os.ReadDir(folderPath)
+	if err != nil {
+		fmt.Println("Error reading folder:", err)
+	}
+
+	var names []string
+
+	for _, file := range files {
+		if !file.IsDir() {
+			names = append(names, file.Name())
+			fmt.Println(file.Name())
+		}
+	}
+
+	namesString := strings.Join(names, "\t")
+	conn.Write([]byte(namesString + "\n"))
+
+	requestedFile := receiveMsg(conn)
+	requestedFile = filepath.Join(folderPath, requestedFile)
+
+	file, err := os.Open(requestedFile)
+	if err != nil {
+		conn.Write([]byte("File not found.\n"))
+		fmt.Println("File not found:", requestedFile)
+		return
+	}
+	defer file.Close()
+
+	_, err = io.Copy(conn, file)
+	if err != nil {
+		fmt.Println("Error sending file:", err)
+		return
+	}
+
+	fmt.Println("File sent successfully:", requestedFile)
+
 }
 
 func genNum() int {
