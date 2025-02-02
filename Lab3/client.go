@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"strings"
@@ -259,10 +258,11 @@ gameLoop:
 				fmt.Println(key, "_Do you want to play again? (yes/no)")
 				fmt.Scan(&answer)
 				answer = strings.ToLower(answer)
-				writeMsg(conn, answer)
 				if answer == "yes" {
+					writeMsg(conn, answer)
 					continue
 				} else if answer == "no" {
+					writeMsg(conn, answer)
 					fmt.Println(key, "_Thanks for playing the Guessing game.")
 					break gameLoop
 				} else {
@@ -279,29 +279,67 @@ gameLoop:
 func downloadFile(conn net.Conn) {
 	fmt.Println("Looking for available files...")
 
-	fmt.Print("Our available files: ")
-	response := readMsg(conn)
-	fmt.Print(response)
+	for {
+		files := readMsg(conn)
+		fmt.Print("Our available files: ", files)
 
-	var filename string
-	fmt.Print(key, "_Which file you want to download? ")
-	fmt.Scan(&filename)
+		var filename string
+		fmt.Print(key, "_Which file you want to download? ")
+		fmt.Scan(&filename)
 
-	writeMsg(conn, filename)
-	localFile, err := os.Create("downloaded_" + filename)
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
+		writeMsg(conn, filename)
+
+		filename = "d_" + filename
+		localFile, err := os.Create(filename)
+		if err != nil {
+			fmt.Println("Error creating file:", err)
+			return
+		}
+		defer localFile.Close()
+
+		// _, err = io.Copy(localFile, conn)
+		// if err != nil {
+		// 	fmt.Println("Error downloading file:", err)
+		// 	return
+		// }
+
+		for {
+			line := readMsg(conn)
+			if err != nil {
+				fmt.Println("Error downloading file:", err)
+				return
+			}
+
+			if strings.TrimSpace(line) == "EOF" {
+				break
+			}
+
+			_, err = localFile.WriteString(line)
+			if err != nil {
+				fmt.Println("Error writing to file:", err)
+				return
+			}
+		}
+
+		response := readMsg(conn)
+		fmt.Println(response)
+
+		answer := ""
+		for answer != "yes" && answer != "no" {
+			fmt.Println(key, "_Do you want to download more? (yes/no)")
+			fmt.Scan(&answer)
+			answer = strings.ToLower(answer)
+
+			if answer == "yes" {
+				writeMsg(conn, answer)
+				continue
+			} else if answer == "no" {
+				writeMsg(conn, answer)
+				fmt.Println(key, "_Thanks for downloading our files.")
+				return
+			} else {
+				fmt.Println(key, "_Please type the correct syntax.")
+			}
+		}
 	}
-	defer localFile.Close()
-
-	_, err = io.Copy(localFile, conn)
-	if err != nil {
-		fmt.Println("Error downloading file:", err)
-		return
-	}
-	fmt.Println("File downloaded successfully as:", "downloaded_"+fileName)
-
-	response = readMsg(conn)
-	fmt.Print(response)
 }

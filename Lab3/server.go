@@ -228,41 +228,53 @@ func playGame(conn net.Conn) {
 
 func getFiles(conn net.Conn) {
 	folderPath := "./files"
-	files, err := os.ReadDir(folderPath)
-	if err != nil {
-		fmt.Println("Error reading folder:", err)
-	}
 
-	var names []string
+	for {
+		files, err := os.ReadDir(folderPath)
+		if err != nil {
+			fmt.Println("Error reading folder:", err)
+		}
 
-	for _, file := range files {
-		if !file.IsDir() {
-			names = append(names, file.Name())
-			fmt.Println(file.Name())
+		var names []string
+
+		for _, file := range files {
+			if !file.IsDir() {
+				names = append(names, file.Name())
+			}
+		}
+
+		namesString := strings.Join(names, "  ")
+		conn.Write([]byte(namesString + "\n"))
+
+		filename := receiveMsg(conn)
+		fmt.Println(authenticated[name], "_I choose", filename)
+
+		filename = filepath.Join(folderPath, filename)
+		file, err := os.Open(filename)
+		if err != nil {
+			conn.Write([]byte("File not found.\n"))
+			fmt.Println("File not found:", filename)
+			return
+		}
+		defer file.Close()
+
+		_, err = io.Copy(conn, file)
+		if err != nil {
+			fmt.Println("Error sending file:", err)
+			return
+		}
+
+		fmt.Println("File sent successfully:", filename)
+		conn.Write([]byte("EOF\n"))
+
+		conn.Write([]byte("File transfer complete.\n"))
+
+		answer := receiveMsg(conn)
+		if answer != "yes" {
+			fmt.Println("Client chose not to download more files.")
+			break
 		}
 	}
-
-	namesString := strings.Join(names, "\t")
-	conn.Write([]byte(namesString + "\n"))
-
-	requestedFile := receiveMsg(conn)
-	requestedFile = filepath.Join(folderPath, requestedFile)
-
-	file, err := os.Open(requestedFile)
-	if err != nil {
-		conn.Write([]byte("File not found.\n"))
-		fmt.Println("File not found:", requestedFile)
-		return
-	}
-	defer file.Close()
-
-	_, err = io.Copy(conn, file)
-	if err != nil {
-		fmt.Println("Error sending file:", err)
-		return
-	}
-
-	fmt.Println("File sent successfully:", requestedFile)
 
 }
 
