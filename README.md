@@ -12,3 +12,8 @@ This repository contains net-centric labs implemented in Go with assistance from
 - Exercise 1 - Character Frequency: [problem](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab2/readme.md#1-character-frequency-solution)
 - Exercise 1 - Character Frequency (OPTIONAL)
 - Exercise 2 - Library Simulation: [problem](https://github.com/ume-meu/golang-lab-netcentric/blob/main/Lab2/readme.md#2-library-simulation-solution)
+
+## Lab 3 - Simple TCP Socket
+(update later)
+
+## Lab 4 - TCP Socket

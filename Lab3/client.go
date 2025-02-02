@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"strings"
@@ -281,7 +282,7 @@ func downloadFile(conn net.Conn) {
 
 	for {
 		files := readMsg(conn)
-		fmt.Print("Our available files: ", files)
+		fmt.Println("Our available files: ", files)
 
 		var filename string
 		fmt.Print(key, "_Which file you want to download? ")
@@ -297,30 +298,12 @@ func downloadFile(conn net.Conn) {
 		}
 		defer localFile.Close()
 
-		// _, err = io.Copy(localFile, conn)
-		// if err != nil {
-		// 	fmt.Println("Error downloading file:", err)
-		// 	return
-		// }
-
-		for {
-			line := readMsg(conn)
-			if err != nil {
-				fmt.Println("Error downloading file:", err)
-				return
-			}
-
-			if strings.TrimSpace(line) == "EOF" {
-				break
-			}
-
-			_, err = localFile.WriteString(line)
-			if err != nil {
-				fmt.Println("Error writing to file:", err)
-				return
-			}
+		_, err = io.Copy(localFile, conn)
+		if err != nil {
+			fmt.Println("Error downloading file:", err)
+			return
 		}
-
+		fmt.Println("File downloaded successfully as:", filename)
 		response := readMsg(conn)
 		fmt.Println(response)
 

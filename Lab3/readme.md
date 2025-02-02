@@ -16,10 +16,8 @@ list of email, list of address (home address, working address,…)
 - Password must be encrypted, Base64 (or any) can be used
 - All user record must be save in .JSON or .GOB file
 - Authentication is needed when client connect to the server
-- Server also generate a random integer value and send back to client after authentication is finished. This key is
-unique among clients
-- Message exchange between client server need to attach this key as a prefix. Example: 125_Hello server , 125_Hello
-client
+- Server also generate a random integer value and send back to client after authentication is finished. This key is unique among clients
+- Message exchange between client server need to attach this key as a prefix. Example: 125_Hello server , 125_Hello client
 
 ### 1. Guessing game:
 - As the game start, server generates a random number between 1 and 100

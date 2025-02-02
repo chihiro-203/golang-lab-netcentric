@@ -250,6 +250,7 @@ func getFiles(conn net.Conn) {
 		fmt.Println(authenticated[name], "_I choose", filename)
 
 		filename = filepath.Join(folderPath, filename)
+
 		file, err := os.Open(filename)
 		if err != nil {
 			conn.Write([]byte("File not found.\n"))
@@ -265,10 +266,8 @@ func getFiles(conn net.Conn) {
 		}
 
 		fmt.Println("File sent successfully:", filename)
-		conn.Write([]byte("EOF\n"))
 
-		conn.Write([]byte("File transfer complete.\n"))
-
+		conn.Write([]byte("Ask for downloading more.\n"))
 		answer := receiveMsg(conn)
 		if answer != "yes" {
 			fmt.Println("Client chose not to download more files.")
