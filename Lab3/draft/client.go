@@ -137,23 +137,6 @@ func register(conn net.Conn) {
 		cPassword = strings.TrimSpace(cPassword)
 
 		if password == cPassword {
-			// hashed, err := hashPassword(password)
-			// if err != nil {
-			// 	fmt.Println("Error hashing password:", err)
-			// }
-			// message := "/register " + username + " " + hashed
-			// _, err = conn.Write([]byte(message + "\n"))
-			// if err != nil {
-			// 	fmt.Println("Error sending registration data to server:", err)
-			// 	return
-			// }
-
-			// response, err := bufio.NewReader(conn).ReadString('\n')
-			// if err != nil {
-			// 	fmt.Println("Error reading from server:", err)
-			// 	return
-			// }
-			// fmt.Printf("Server:  %s", response)
 			break
 		} else {
 			fmt.Println("Passwords do not match. Please try again.")
